@@ -1,34 +1,25 @@
 pipeline{
     agent any
     stages{
-        stage('github validation new'){
-          steps{
-                 git url: 'https://github.com/akshu20791/addressbook-cicd-project'
-          }
-        }
-        stage('compiling the code'){
-          steps{
-                 sh 'mvn compile'
-          }
-        }
-        stage('testing the code'){
+        stage("git clone"){
             steps{
-                sh 'mvn test'
+                git 'https://github.com/Raj395312/addressbook-cicd-project'
             }
         }
-        stage('qa of the code'){
+        
+        stage("build the package"){
             steps{
-                sh 'mvn pmd:pmd'
+                sh 'mvn clean package'
             }
         }
-        stage('package'){
+        stage("docker image build"){
             steps{
-                sh 'mvn package'
+                sh 'docker build -t addressbook:v1 .'
             }
         }
-        stage("deploy the project on tomcat"){
+        stage("deploy the app"){
             steps{
-                sh "sudo mv /var/lib/jenkins/workspace/pipeline/target/addressbook.war /home/ubuntu/apache-tomcat-8.5.100/webapps/"
+                sh 'docker run -d --name addressbook -p 8081:8080 addressbook:v1'
             }
         }
     }
